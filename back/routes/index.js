@@ -16,7 +16,7 @@ router.post('/register', function(request, response){
 
     if(user_email_address && user_password)
     {
-        query = `INSERT INTO user_login (user_email, user_password) VALUES ("${user_email_address}", "${user_password}")`;
+        query = `INSERT INTO user_login (user_email, user_password) VALUES ("${user_email_address}", "${user_password}")`; // A EDIT POUR EVITER LES INJONCTIONS
         database.query(query);
         response.send('Your Account Has Been Created Successfully');
     }
