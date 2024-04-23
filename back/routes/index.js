@@ -1,38 +1,72 @@
 var express = require('express');
 var router = express.Router();
 var database = require('../database');
+require('dotenv').config(); // INSTALLER DOTENV = npm install dotenv
+var clientSecret = process.env.CLIENT_SECRET;
+const querystring = require('querystring'); // A IMPORTER POUR LES FONCTIONS DES ROUTES
 
-///////////////////////////////////////////////////////////////////// API
-require('dotenv').config();
-var scope = 'user-read-private user-read-email';
-const spotifyWebApi = require('spotify-web-api-node');
-const spotifyApi = new spotifyWebApi({
-    clientId: process.env.CLIENT_ID,
-    clientSecret: process.env.CLIENT_SECRET,
-    redirectUrl: process.env.REDIRECT_URL
-});
+// RANDOM GENERATOR
+function generateRandomString(length) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        result += characters[randomIndex];
+    }
+    return result;
+}
 
-
-///////////////////////////////////////////////////////////////////// API
-app.get('/login', function(req, res) {
-
+////////////////////////////////////////////////////////////////////////////////////////////////// API OAUTH STEP 1
+router.get('/auth', function(req, res) {
     var state = generateRandomString(16);
     var scope = 'user-read-private user-read-email';
-  
+    var clientId = process.env.CLIENT_ID;
+    var redirectUrl = process.env.REDIRECT_URL;
+
     res.redirect('https://accounts.spotify.com/authorize?' +
       querystring.stringify({
-        response_type: 'code',
-        client_id: client_id,
+        response_type: 'code', // ELEMENT QUI SE RETROUVE DANS L'URL QUAND L'USER ACCEPTE L'AUTH
+        client_id: clientId,
         scope: scope,
-        redirect_uri: redirect_uri,
-        state: state
-      }));
+        redirect_uri: redirectUrl,
+        state: state // ELEMENT QUI SE RETROUVE DANS L'URL QUAND L'USER ACCEPTE L'AUTH
+      })); 
   });
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////// API OAUTH STEP 2
+router.get('/callback', function(req, res) {
+
+  var code = req.query.code || null;
+  var state = req.query.state || null;
+
+  if (state === null) {
+    res.redirect('/#' +
+      querystring.stringify({
+        error: 'state_mismatch'
+      }));
+  } else {
+    var authOptions = {
+      url: 'https://accounts.spotify.com/api/token',
+      form: {
+        code: code,
+        redirect_uri: redirectUrl,
+        grant_type: 'authorization_code'
+      },
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        'Authorization': 'Basic ' + (new Buffer.from(clientId + ':' + clientSecret).toString('base64'))
+      },
+      json: true
+    };
+  }
+});
 
 ///////////////////////////////////////////////////////////////////// GO TO HOME PAGE
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express', session : req.session });
 });
+
 
 //////////////////////////////////////////////////////////////////// REGISTER ON THE SITE
 router.post('/register', function(request, response){
@@ -54,7 +88,6 @@ router.post('/register', function(request, response){
     }
 
 });
-
 
 
 //////////////////////////////////////////////////////////////////// LOGIN TO THE SITE
