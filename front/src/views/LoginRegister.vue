@@ -45,15 +45,57 @@
   const registerData = ref({ email: '', password: '' });
   const router = useRouter();
   
-  function login() {
-    // to be continued...
-    console.log('toto');
+  async function login() {
+    try {
+      // Vérifier si le mot de passe a au moins 8 caractères
+      if (loginData.value.password.length < 8) {
+        window.alert('Password must be at least 8 characters long');
+        console.error('Password must be at least 8 characters long');
+        return; 
+      }
+  
+      const response = await fetch('http://localhost:3000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(loginData.value)
+      });
+  
+      if (response.ok) {
+        // Connexion réussie, redirigez l'utilisateur vers une autre page ou effectuez d'autres actions nécessaires
+        router.push('/');
+        console.log('Yataaaa');
+      } else {
+        console.error('fail');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
   }
   
-  function register() {
-    // to be continued...
-    console.log('tata');
+  async function register() {
+  try {
+    const response = await fetch('http://localhost:3000/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(registerData.value)
+    });
+
+    if (response.ok) {
+      // Enregistrement réussi, redirigez l'utilisateur vers une autre page ou effectuez d'autres actions nécessaires
+      router.push('/');
+      console.log('Registration successful');
+    } else {
+      console.error('Registration failed');
+    }
+  } catch (error) {
+    console.error('Error:', error);
   }
+}
+
   
   function switchMode(newMode) {
     mode.value = newMode;
