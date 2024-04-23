@@ -3,7 +3,7 @@
       <h1>Login</h1>
   
       <div v-if="mode === 'login'">
-        <h2>Login</h2>
+        <h2>Sign In</h2>
         <form @submit.prevent="login">
           <label for="email">Email:</label>
           <input type="email" id="email" v-model="loginData.email" required>
@@ -13,11 +13,15 @@
           
           <button type="submit">Login</button>
         </form>
-        <p>Don't have an account? <button @click="switchMode('register')">Register</button></p>
+        <button @click="signInWithSpotify">Sign In with Spotify</button>
+        <p>
+          <router-link to="/forgot-password">Forgot Password?</router-link>
+          Don't have an account? <button @click="switchMode('register')">Sign Up</button>
+        </p>
       </div>
   
       <div v-else>
-        <h2>Register</h2>
+        <h2>Sign Up</h2>
         <form @submit.prevent="register">
           <label for="registerEmail">Email:</label>
           <input type="email" id="registerEmail" v-model="registerData.email" required>
@@ -34,10 +38,12 @@
   
   <script setup>
   import { ref } from 'vue';
+  import { useRouter } from 'vue-router';
   
   const mode = ref('login'); 
   const loginData = ref({ email: '', password: '' });
   const registerData = ref({ email: '', password: '' });
+  const router = useRouter();
   
   function login() {
     // to be continued...
@@ -51,6 +57,11 @@
   
   function switchMode(newMode) {
     mode.value = newMode;
+  }
+  
+  function signInWithSpotify() {
+    // Logique de connexion avec Spotify
+    console.log('Sign In with Spotify');
   }
   </script>
   
@@ -89,6 +100,7 @@
     color: hsla(160, 100%, 37%, 1);
     border: none;
     cursor: pointer;
+    margin-top: 10px; /* Ajout de cette ligne pour espacer le bouton */
   }
   
   button:hover {
