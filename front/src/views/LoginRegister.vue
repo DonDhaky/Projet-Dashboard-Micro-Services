@@ -1,14 +1,12 @@
 <template>
   <div class="container">
-    <h1>Login</h1>
-
     <div v-if="mode === 'login'">
-      <h2>Sign In</h2>
+      <h2 class="title">Sign In</h2>
       <form @submit.prevent="login">
-        <label for="email">Email:</label>
+        <label for="email">Email :</label>
         <input type="email" id="email" v-model="loginData.email" required />
 
-        <label for="password">Password:</label>
+        <label for="password">Password :</label>
         <input type="password" id="password" v-model="loginData.password" required />
 
         <button type="submit">Login</button>
@@ -16,17 +14,17 @@
       <button @click="signInWithSpotify">Sign In with Spotify</button>
       <p>
         <router-link to="/forgot-password">Forgot Password?</router-link>
-        Don't have an account? <button @click="switchMode('register')">Sign Up</button>
+        Don't have an account ? <button @click="switchMode('register')">Sign Up</button>
       </p>
     </div>
 
     <div v-else>
-      <h2>Sign Up</h2>
+      <h2 class="title">Sign Up</h2>
       <form @submit.prevent="register">
-        <label for="registerEmail">Email:</label>
+        <label for="registerEmail">Email :</label>
         <input type="email" id="registerEmail" v-model="registerData.email" required />
 
-        <label for="registerPassword">Password:</label>
+        <label for="registerPassword">Password :</label>
         <input
           type="password"
           id="registerPassword"
@@ -36,7 +34,7 @@
 
         <button type="submit">Register</button>
       </form>
-      <p>Already have an account? <button @click="switchMode('login')">Login</button></p>
+      <p>Already have an account ? <button @click="switchMode('login')">Login</button></p>
     </div>
   </div>
 </template>
@@ -46,30 +44,29 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 const mode = ref("login");
-const loginData = ref({ email: "", password: "" });
-const registerData = ref({ email: "", password: "" });
 const router = useRouter();
 
-async function login() {
-  try {
-    // Vérifier si le mot de passe a au moins 8 caractères
-    if (loginData.value.password.length < 8) {
-      window.alert("Password must be at least 8 characters long");
-      console.error("Password must be at least 8 characters long");
-      return;
-    }
+////////////////////////////////////////////////////////////////////////////////////// LOGIN
+const loginData = ref({ email: "", password: "" });
 
+async function login() {
+  const loginFormData = new URLSearchParams();
+  loginFormData.append("user_email_address", loginData.value.email);
+  loginFormData.append("user_password", loginData.value.password);
+
+  try {
     const response = await fetch("http://localhost:3000/login", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: JSON.stringify(loginData.value),
+      body: loginFormData,
     });
 
     if (response.ok) {
-      router.push("/");
-      console.log("Yataaaa");
+      console.log("Connexion réussie");
+      window.alert("Connexion réussie");
+      router.push("/dashboard");
     } else {
       console.error("Fail to connect");
     }
@@ -78,21 +75,39 @@ async function login() {
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////////// REGISTER
+const registerData = ref({ email: "", password: "" });
+
 async function register() {
+  const registerFormData = new URLSearchParams();
+  registerFormData.append("user_email_address", registerData.value.email);
+  registerFormData.append("user_password", registerData.value.password);
+
   try {
-    const response = await fetch("http://localhost:3000/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(registerData.value),
-    });
+    // Vérifier si le mot de passe a au moins 8 caractères
+    if (registerData.value.password.length < 8) {
+      window.alert("Password must be at least 8 characters long");
+      return;
+    }
+    const response = await fetch(
+      "http://localhost:3000/register",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: registerFormData,
+      }
+      // console.log(registerFormData.toString()) // OBSERVATION DES DONNEES ENVOYEES
+    );
 
     if (response.ok) {
-      router.push("/");
       console.log("Registration successful");
+      alert("Registration successful, you can connect with your account !");
+      router.push("/");
     } else {
       console.error("Registration failed");
+      alert("Registration failed, try again !");
     }
   } catch (error) {
     console.error("Error:", error);
@@ -115,6 +130,10 @@ function signInWithSpotify() {
   align-items: center;
   justify-content: center;
   height: 100vh;
+}
+
+.title {
+  text-align: center;
 }
 
 h1 {

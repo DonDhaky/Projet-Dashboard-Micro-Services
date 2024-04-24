@@ -1,23 +1,20 @@
 <template>
   <div id="app">
     <header>
-      <router-link to="/">Home</router-link> 
-      <router-link to="/login-register">Login/Register</router-link> 
+      <router-link to="/">Home</router-link>
+      <router-link to="/dashboard">Dashboard</router-link>
+      <router-link to="/widgets">Widgets</router-link>
     </header>
 
     <main>
       <router-view></router-view>
     </main>
-
   </div>
 </template>
 
-<script setup>
-
-</script>
+<script setup></script>
 
 <style>
-
 #app {
   font-family: Arial, sans-serif;
 }

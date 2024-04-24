@@ -5,6 +5,11 @@ var cors = require('cors')
 require('dotenv').config(); // INSTALLER DOTENV = npm install dotenv
 var clientSecret = process.env.CLIENT_SECRET;
 const querystring = require('querystring'); // A IMPORTER POUR LES FONCTIONS DES ROUTES
+var app = express();
+const bodyParser = require('body-parser');
+
+app.use(express.urlencoded({ extended: true })); // GESTION DES REQUETES EN URLENCODED
+
 router.use(cors())
 
 // RANDOM GENERATOR
@@ -95,7 +100,7 @@ router.post('/register', function(request, response){
     {
         query = `INSERT INTO user_login (user_email, user_password) VALUES ("${user_email_address}", "${user_password}")`; // A EDIT POUR EVITER LES INJONCTIONS
         database.query(query);
-        response.send('Your Account Has Been Created Successfully');
+        response.send("Cette requête vient d'être effectuée avec succès");
     }
     else
     {
