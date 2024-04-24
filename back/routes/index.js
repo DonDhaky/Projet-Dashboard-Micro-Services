@@ -1,9 +1,11 @@
 var express = require('express');
 var router = express.Router();
 var database = require('../database');
+var cors = require('cors')
 require('dotenv').config(); // INSTALLER DOTENV = npm install dotenv
 var clientSecret = process.env.CLIENT_SECRET;
 const querystring = require('querystring'); // A IMPORTER POUR LES FONCTIONS DES ROUTES
+router.use(cors())
 
 // RANDOM GENERATOR
 function generateRandomString(length) {
@@ -46,6 +48,7 @@ router.get('/callback', function(req, res) {
         error: 'state_mismatch'
       }));
   } else {
+    //////////////////// RECUPERATION DU TOKEN ACCESS
     var authOptions = {
       url: 'https://accounts.spotify.com/api/token',
       form: {
@@ -59,6 +62,19 @@ router.get('/callback', function(req, res) {
       },
       json: true
     };
+
+    //////////////////// ECHANGE DU TOKEN ACCESS
+    request.post(authOptions.url, {
+      form: authOptions.form,
+      headers: authOptions.headers
+    }, function(error, response, body) {
+      if (!error && response.statusCode === 200) {
+        const accessToken = JSON.parse(body).access_token;
+
+      } else {
+        console.error('Error exchanging authorization code for access token:', error);
+      }
+    });
   }
 });
 
