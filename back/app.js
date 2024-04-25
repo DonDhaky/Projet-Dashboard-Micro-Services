@@ -3,11 +3,21 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var expressSession = require('express-session');
+var app = express();
+var cors = require('cors');
+const bodyParser = require('body-parser');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
-var app = express();
+
+app.use(express.urlencoded({ extended: true })); // GESTION DES REQUETES EN URLENCODED
+app.use(expressSession({ // AJOUTE POUR LA CONNEXION
+  secret : 'webslesson', // AJOUTE POUR LA CONNEXION
+  resave : true, // AJOUTE POUR LA CONNEXION 
+  saveUninitialized : true // AJOUTE POUR LA CONNEXION
+})); // AJOUTE POUR LA CONNEXION
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -15,9 +25,10 @@ app.set('view engine', 'jade');
 
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(cors());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
