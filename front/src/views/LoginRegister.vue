@@ -70,7 +70,7 @@ async function login() {
         alert("Your email or password is incorrect !");
       } else {
         console.log("Login successful");
-        window.alert("You are now conneceted !");
+        window.alert("You are now connected !");
         router.push("/dashboard");
       }
     }
