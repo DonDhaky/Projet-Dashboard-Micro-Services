@@ -64,11 +64,15 @@ async function login() {
     });
 
     if (response.ok) {
-      console.log("Connexion réussie");
-      window.alert("Connexion réussie");
-      router.push("/dashboard");
-    } else {
-      console.error("Fail to connect");
+      const text = await response.text();
+      if (text.includes("error")) {
+        console.error("Login failed :", text);
+        alert("Your email or password is incorrect !");
+      } else {
+        console.log("Login successful");
+        window.alert("You are now conneceted !");
+        router.push("/dashboard");
+      }
     }
   } catch (error) {
     console.error("Error:", error);
@@ -102,11 +106,17 @@ async function register() {
     );
 
     if (response.ok) {
-      console.log("Registration successful");
-      alert("Registration successful, you can connect with your account !");
-      router.push("/");
+      const text = await response.text();
+      if (text.includes("error")) {
+        console.error("Registration failed :", text);
+        alert("Your email is already in use !");
+      } else {
+        console.log("Registration successful");
+        alert("Registration successful, you can connect with your account !");
+        window.location.reload();
+      }
     } else {
-      console.error("Registration failed");
+      console.error("Registration failed:", response.status, response.statusText);
       alert("Registration failed, try again !");
     }
   } catch (error) {
