@@ -1,109 +1,163 @@
 var express = require('express');
 var router = express.Router();
 var database = require('../database');
+var cors = require('cors')
+require('dotenv').config(); // INSTALLER DOTENV = npm install dotenv
+var clientSecret = process.env.CLIENT_SECRET;
+const querystring = require('querystring'); // A IMPORTER POUR LES FONCTIONS DES ROUTES
+var app = express();
+const bodyParser = require('body-parser');
+const bcrypt = require('bcryptjs');
 
-///////////////////////////////////////////////////////////////////// API
-// require('dotenv').config();
-// var scope = 'user-read-private user-read-email';
-// const spotifyWebApi = require('spotify-web-api-node');
-// const spotifyApi = new spotifyWebApi({
-//     clientId: process.env.CLIENT_ID,
-//     clientSecret: process.env.CLIENT_SECRET,
-//     redirectUrl: process.env.REDIRECT_URL
-// });
+app.use(express.urlencoded({ extended: true })); // GESTION DES REQUETES EN URLENCODED
+
+router.use(cors())
+
+// RANDOM GENERATOR
+function generateRandomString(length) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        result += characters[randomIndex];
+    }
+    return result;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////// API OAUTH STEP 1
+router.get('/auth', function(req, res) {
+    var state = generateRandomString(16);
+    var scope = 'user-read-private user-read-email';
+    var clientId = process.env.CLIENT_ID;
+    var redirectUrl = process.env.REDIRECT_URL;
+
+    res.redirect('https://accounts.spotify.com/authorize?' +
+      querystring.stringify({
+        response_type: 'code', // ELEMENT QUI SE RETROUVE DANS L'URL QUAND L'USER ACCEPTE L'AUTH
+        client_id: clientId,
+        scope: scope,
+        redirect_uri: redirectUrl,
+        state: state // ELEMENT QUI SE RETROUVE DANS L'URL QUAND L'USER ACCEPTE L'AUTH
+      })); 
+  });
 
 
-///////////////////////////////////////////////////////////////////// API
-// app.get('/login', function(req, res) {
+////////////////////////////////////////////////////////////////////////////////////////////////// API OAUTH STEP 2
+router.get('/callback', function(req, res) {
 
-//     var state = generateRandomString(16);
-//     var scope = 'user-read-private user-read-email';
-  
-//     res.redirect('https://accounts.spotify.com/authorize?' +
-//       querystring.stringify({
-//         response_type: 'code',
-//         client_id: client_id,
-//         scope: scope,
-//         redirect_uri: redirect_uri,
-//         state: state
-//       }));
-//   });
+  var code = req.query.code || null;
+  var state = req.query.state || null;
+
+  if (state === null) {
+    res.redirect('/#' +
+      querystring.stringify({
+        error: 'state_mismatch'
+      }));
+  } else {
+    //////////////////// RECUPERATION DU TOKEN ACCESS
+    var authOptions = {
+      url: 'https://accounts.spotify.com/api/token',
+      form: {
+        code: code,
+        redirect_uri: redirectUrl,
+        grant_type: 'authorization_code'
+      },
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        'Authorization': 'Basic ' + (new Buffer.from(clientId + ':' + clientSecret).toString('base64'))
+      },
+      json: true
+    };
+
+    //////////////////// ECHANGE DU TOKEN ACCESS
+    request.post(authOptions.url, {
+      form: authOptions.form,
+      headers: authOptions.headers
+    }, function(error, response, body) {
+      if (!error && response.statusCode === 200) {
+        const accessToken = JSON.parse(body).access_token;
+
+      } else {
+        console.error('Erreur lors de la récupération du token :', error);
+      }
+    });
+  }
+});
 
 ///////////////////////////////////////////////////////////////////// GO TO HOME PAGE
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express', session : req.session });
 });
 
+
 //////////////////////////////////////////////////////////////////// REGISTER ON THE SITE
-router.post('/register', function(request, response){
+router.post('/register', function(request, response) {
 
-    var user_email_address = request.body.user_email_address;
+var user_email_address = request.body.user_email_address;
+var user_password = request.body.user_password;
 
-    var user_password = request.body.user_password;
-
-    if(user_email_address && user_password)
-    {
-        query = `INSERT INTO user_login (user_email, user_password) VALUES ("${user_email_address}", "${user_password}")`; // A EDIT POUR EVITER LES INJONCTIONS
-        database.query(query);
-        response.send('Your Account Has Been Created Successfully');
+if(user_email_address && user_password) {
+var chekingMailQuery = `SELECT * FROM user_login WHERE user_email = "${user_email_address}"`;
+database.query(chekingMailQuery, function(error, data) {
+    if(data.length > 0) {
+      response.set('Content-Type', 'application/x-www-form-urlencoded');
+      response.send(querystring.stringify({ error: 'This email adress is already in use !' }));
+    } else {
+        bcrypt.hash(user_password, 10, function(err, hash) {
+            if (err) {
+                console.error(err);
+                response.send('Une erreur a été rencontrée lors du hashage du mot de passe');
+                response.end();
+            } else {
+                // J'insère l'utilisateur dans la base de données avec le mot de passe hashé
+                var query = `INSERT INTO user_login (user_email, user_password) VALUES ("${user_email_address}", "${hash}")`;
+                database.query(query);
+                response.send("Cette requête vient d'être effectuée avec succès");
+            }
+        });
     }
-    else
-    {
-        response.send('Please Enter Valid Email Address And Password');
-        response.end();
-    }
-
 });
 
+} else {
+  response.set('Content-Type', 'application/x-www-form-urlencoded');
+  response.send(querystring.stringify({ error: 'Please type valid email and/or password to register.' }));
+}
+});
 
 
 //////////////////////////////////////////////////////////////////// LOGIN TO THE SITE
-router.post('/login', function(request, response, next){
+router.post('/login', function(request, response, next) {
 
-    var user_email_address = request.body.user_email_address;
+  var user_email_address = request.body.user_email_address;
+  var user_password = request.body.user_password;
 
-    var user_password = request.body.user_password;
+if(user_email_address && user_password) {
+    var query = `SELECT * FROM user_login WHERE user_email = "${user_email_address}"`;
 
-    if(user_email_address && user_password)
-    {
-        query = `
-        SELECT * FROM user_login 
-        WHERE user_email = "${user_email_address}"
-        `;
-
-        database.query(query, function(error, data){
-
-            if(data.length > 0)
-            {
-                for(var count = 0; count < data.length; count++)
-                {
-                    if(data[count].user_password == user_password)
-                    {
-                        request.session.user_id = data[count].user_id;
-
-                        response.redirect("/");
-                    }
-                    else
-                    {
-                        response.send('Incorrect Password');
-                    }
+    database.query(query, function(error, data) {
+        if(data.length > 0) {
+            var hashedPassword = data[0].user_password;
+            bcrypt.compare(user_password, hashedPassword, function(err, result) {
+                if(result == true) {
+                    request.session.user_id = data[0].user_id;
+                    response.redirect("/");
+                } else {
+                  response.set('Content-Type', 'application/x-www-form-urlencoded');
+                  response.send(querystring.stringify({ error: 'Incorrect password !' }));
                 }
-            }
-            else
-            {
-                response.send('Incorrect Email Address');
-            }
-            response.end();
-        });
-    }
-    else
-    {
-        response.send('Please Enter Email Address and Password Details');
+            });
+
+        } else {
+          response.set('Content-Type', 'application/x-www-form-urlencoded');
+          response.send(querystring.stringify({ error: 'Incorrect email adress !' }));
+        }
         response.end();
-    }
-
+    });
+} else {
+  response.set('Content-Type', 'application/x-www-form-urlencoded');
+  response.send(querystring.stringify({ error: 'Please type valid email and/or password to login.' }));
+}
 });
-
 
 ///////////////////////////////////////////////////////////////////////// LOGOUT FROM THE SITE
 router.get('/logout', function(request, response, next){
