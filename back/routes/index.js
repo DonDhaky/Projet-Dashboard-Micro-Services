@@ -140,29 +140,27 @@ if(user_email_address && user_password) {
             bcrypt.compare(user_password, hashedPassword, function(err, result) {
                 if(result == true) {
                     request.session.user_id = data[0].user_id;
-                    response.redirect("/");
+                    return response.redirect("/");
                 } else {
                   response.set('Content-Type', 'application/x-www-form-urlencoded');
-                  response.send(querystring.stringify({ error: 'Incorrect password !' }));
+                  return response.send(querystring.stringify({ error: 'Incorrect password !' }));
                 }
             });
 
         } else {
           response.set('Content-Type', 'application/x-www-form-urlencoded');
-          response.send(querystring.stringify({ error: 'Incorrect email adress !' }));
-        }
-        response.end();
-    });
+          return response.send(querystring.stringify({ error: 'Incorrect email adress !' }));
+        }});
 } else {
   response.set('Content-Type', 'application/x-www-form-urlencoded');
-  response.send(querystring.stringify({ error: 'Please type valid email and/or password to login.' }));
+  return response.send(querystring.stringify({ error: 'Please type valid email and/or password to login.' }));
 }
 });
 
 ///////////////////////////////////////////////////////////////////////// LOGOUT FROM THE SITE
 router.get('/logout', function(request, response, next){
 
-    request.session.destroy();
+    request.sessionestroy();
 
     response.redirect("/");
 
