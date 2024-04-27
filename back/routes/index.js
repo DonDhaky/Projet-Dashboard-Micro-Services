@@ -8,10 +8,15 @@ const querystring = require('querystring'); // A IMPORTER POUR LES FONCTIONS DES
 var app = express();
 const bodyParser = require('body-parser');
 const bcrypt = require('bcryptjs');
-
+app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // GESTION DES REQUETES EN URLENCODED
-
 router.use(cors())
+
+
+//////////////////////////////////////////////////////////////// GIF SERVICE
+const gifService = require('./gifService'); // IMPORTATION DU FICHIER DE ROUTES DU SERVICE GIF
+app.use('/gif', gifService); // DEFINITION DU SERVICE SUR CETTE ROUTE
+
 
 // RANDOM GENERATOR
 function generateRandomString(length) {
@@ -24,6 +29,7 @@ function generateRandomString(length) {
     return result;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////// API OAUTH STEP 1
 router.get('/auth', function(req, res) {
     var state = generateRandomString(16);
@@ -54,7 +60,7 @@ router.get('/callback', function(req, res) {
         error: 'state_mismatch'
       }));
   } else {
-    //////////////////// RECUPERATION DU TOKEN ACCESS
+
     var authOptions = {
       url: 'https://accounts.spotify.com/api/token',
       form: {
@@ -69,7 +75,6 @@ router.get('/callback', function(req, res) {
       json: true
     };
 
-    //////////////////// ECHANGE DU TOKEN ACCESS
     request.post(authOptions.url, {
       form: authOptions.form,
       headers: authOptions.headers
@@ -82,11 +87,6 @@ router.get('/callback', function(req, res) {
       }
     });
   }
-});
-
-///////////////////////////////////////////////////////////////////// GO TO HOME PAGE
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express', session : req.session });
 });
 
 
@@ -125,7 +125,7 @@ database.query(chekingMailQuery, function(error, data) {
 });
 
 
-//////////////////////////////////////////////////////////////////// LOGIN TO THE SITE
+//////////////////////////////////////////////////////////////////// LOGIN ON THE SITE
 router.post('/login', function(request, response, next) {
 
   var user_email_address = request.body.user_email_address;
@@ -157,13 +157,43 @@ if(user_email_address && user_password) {
 }
 });
 
+
 ///////////////////////////////////////////////////////////////////////// LOGOUT FROM THE SITE
 router.get('/logout', function(request, response, next){
 
-    request.sessionestroy();
+    request.sessiondestroy();
 
     response.redirect("/");
 
+});
+
+
+///////////////////////////////////////////////////////////////////// GO TO HOME PAGE
+router.get('/', function(req, res, next) {
+  res.render('index', { title: 'Express', session : req.session });
+});
+
+
+////////////////////////////////////////////////////////////////////// GIF SERVICE
+router.get('/gif', function(request, res) {
+  var giphyApiKey = process.env.GIPHY_API_KEY;
+  var research = req.query.search;
+  var giphyApiUrl = 'https://api.giphy.com/v1/gifs/random?api_key=${giphyApiKey}&tag=${research}&rating=g';
+
+  request.get(giphyApiUrl, function(request, response, next) {
+  if (error || response.statusCode!== 200) {
+    return res.statusCode(500).json({error: 'Servor error while trying the get the gif...'});
+  }
+  const gifData = JSON.parse(body);
+  const gifUrl = gifData[0].images.fixed_height.url;
+  request.get(gifUrl, function(error, response, body) {
+    if (error || response.statusCode!== 200) {
+      return res.statusCode(500).json({error: 'Servor error while trying the get the gif...'});
+    }
+    res.set('Content-Type', 'image/gif');
+    res.sent(body);
+});
+});
 });
 
 module.exports = router;
