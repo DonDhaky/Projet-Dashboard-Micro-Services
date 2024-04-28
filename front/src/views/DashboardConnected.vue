@@ -6,10 +6,10 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
-const router = useRouter();
+const router = useRouter()
 
 // ON PEUT UTILISER SWITCHMODE POUR PASSER DES PARAMETRES AUX WIDGETS ?
 // function switchMode(newMode) {

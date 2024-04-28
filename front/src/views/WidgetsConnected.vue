@@ -1,20 +1,26 @@
 <template>
   <div class="container">
-    Ici on affichera directement les Widgets qu'on aura sélectionnés dans l'onglet
-    Dashboard.
+    <WeatherWidget />
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
-const router = useRouter();
+import WeatherWidget from '../components/WeatherWidget.vue';
+
+
+
+const router = useRouter()
 
 // ON PEUT UTILISER SWITCHMODE POUR PASSER DES PARAMETRES AUX WIDGETS ?
 // function switchMode(newMode) {
 //   mode.value = newMode;
 // }
+
+
+
 </script>
 
 <style scoped>

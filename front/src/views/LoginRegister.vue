@@ -25,12 +25,7 @@
         <input type="email" id="registerEmail" v-model="registerData.email" required />
 
         <label for="registerPassword">Password :</label>
-        <input
-          type="password"
-          id="registerPassword"
-          v-model="registerData.password"
-          required
-        />
+        <input type="password" id="registerPassword" v-model="registerData.password" required />
 
         <button type="submit">Register</button>
       </form>
@@ -40,96 +35,96 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
-const mode = ref("login");
-const router = useRouter();
+const mode = ref('login')
+const router = useRouter()
 
 ////////////////////////////////////////////////////////////////////////////////////// LOGIN
-const loginData = ref({ email: "", password: "" });
+const loginData = ref({ email: '', password: '' })
 
 async function login() {
-  const loginFormData = new URLSearchParams();
-  loginFormData.append("user_email_address", loginData.value.email);
-  loginFormData.append("user_password", loginData.value.password);
+  const loginFormData = new URLSearchParams()
+  loginFormData.append('user_email_address', loginData.value.email)
+  loginFormData.append('user_password', loginData.value.password)
 
   try {
-    const response = await fetch("http://localhost:3000/login", {
-      method: "POST",
+    const response = await fetch('http://localhost:3000/login', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+        'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: loginFormData,
-    });
+      body: loginFormData
+    })
 
     if (response.ok) {
-      const text = await response.text();
-      if (text.includes("error")) {
-        console.error("Login failed :", text);
-        alert("Your email or password is incorrect !");
+      const text = await response.text()
+      if (text.includes('error')) {
+        console.error('Login failed :', text)
+        alert('Your email or password is incorrect !')
       } else {
-        console.log("Login successful");
-        window.alert("You are now connected !");
-        router.push("/dashboard");
+        console.log('Login successful')
+        window.alert('You are now connected !')
+        router.push('/dashboard')
       }
     }
   } catch (error) {
-    console.error("Error:", error);
+    console.error('Error:', error)
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////// REGISTER
-const registerData = ref({ email: "", password: "" });
+const registerData = ref({ email: '', password: '' })
 
 async function register() {
-  const registerFormData = new URLSearchParams();
-  registerFormData.append("user_email_address", registerData.value.email);
-  registerFormData.append("user_password", registerData.value.password);
+  const registerFormData = new URLSearchParams()
+  registerFormData.append('user_email_address', registerData.value.email)
+  registerFormData.append('user_password', registerData.value.password)
 
   try {
     // Vérifier si le mot de passe a au moins 8 caractères
     if (registerData.value.password.length < 8) {
-      window.alert("Password must be at least 8 characters long");
-      return;
+      window.alert('Password must be at least 8 characters long')
+      return
     }
     const response = await fetch(
-      "http://localhost:3000/register",
+      'http://localhost:3000/register',
       {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+          'Content-Type': 'application/x-www-form-urlencoded'
         },
-        body: registerFormData,
+        body: registerFormData
       }
       // console.log(registerFormData.toString()) // OBSERVATION DES DONNEES ENVOYEES
-    );
+    )
 
     if (response.ok) {
-      const text = await response.text();
-      if (text.includes("error")) {
-        console.error("Registration failed :", text);
-        alert("Your email is already in use !");
+      const text = await response.text()
+      if (text.includes('error')) {
+        console.error('Registration failed :', text)
+        alert('Your email is already in use !')
       } else {
-        console.log("Registration successful");
-        alert("Registration successful, you can connect with your account !");
-        window.location.reload();
+        console.log('Registration successful')
+        alert('Registration successful, you can connect with your account !')
+        window.location.reload()
       }
     } else {
-      console.error("Registration failed:", response.status, response.statusText);
-      alert("Registration failed, try again !");
+      console.error('Registration failed:', response.status, response.statusText)
+      alert('Registration failed, try again !')
     }
   } catch (error) {
-    console.error("Error:", error);
+    console.error('Error:', error)
   }
 }
 
 function switchMode(newMode) {
-  mode.value = newMode;
+  mode.value = newMode
 }
 
 function signInWithSpotify() {
-  window.location.href = "http://localhost:3000/auth";
+  window.location.href = 'http://localhost:3000/auth'
 }
 </script>
 

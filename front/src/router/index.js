@@ -1,8 +1,8 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router'
 
-import LoginRegister from '../views/LoginRegister.vue';
-import DashboardConnected from '../views/DashboardConnected.vue';
-import WidgetsConnected from '../views/WidgetsConnected.vue';
+import LoginRegister from '../views/LoginRegister.vue'
+import DashboardConnected from '../views/DashboardConnected.vue'
+import WidgetsConnected from '../views/WidgetsConnected.vue'
 
 const routes = [
   {
@@ -21,13 +21,12 @@ const routes = [
     path: '/widgets',
     name: 'Widgets',
     component: WidgetsConnected
-  },
-
-];
+  }
+]
 
 const router = createRouter({
   history: createWebHistory(),
   routes
-});
+})
 
-export default router;
+export default router
